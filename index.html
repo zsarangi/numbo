@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Numbo — ten sums against the clock</title>
+<meta name="description" content="Ten quick sums a day, against the clock. Three levels, four medals, and a time to send your friends.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,700;1,9..144,900&family=Karla:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#0e1124">
+<style>
+  :root {
+    --ink:      #0e1124;
+    --panel:    #252c50;
+    --panel-2:  #2c3460;
+    --line:     #3d4678;
+    --ivory:    #efeae0;
+    --muted:    #9ba2c4;
+    --sage:     #6fa97c;
+    --ochre:    #e0b25c;
+    --slate:    #4d5478;
+    --rust:     #d0705c;
+    --radius:   10px;
+
+    --display: "Fraunces", Georgia, serif;
+    --ui: "Karla", system-ui, -apple-system, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    background: var(--ink);
+    color: var(--ivory);
+    font-family: var(--ui);
+    font-size: 17px;
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.25rem 1rem 3rem;
+  }
+
+  .shell { width: 100%; max-width: 32rem; }
+  [hidden] { display: none !important; }
+
+  header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: .75rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .wordmark {
+    font-family: var(--display);
+    font-weight: 900;
+    font-style: italic;
+    font-size: 2.15rem;
+    letter-spacing: -.02em;
+    line-height: 1.05;
+    margin: 0;
+  }
+
+  .wordmark span { color: var(--ochre); }
+  .puzzle-no { color: var(--muted); font-size: .85rem; }
+  .nav { display: flex; gap: .4rem; flex-shrink: 0; }
+
+  .icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.3rem;
+    height: 2.3rem;
+    background: none;
+    border: 1px solid var(--line);
+    color: var(--muted);
+    border-radius: var(--radius);
+    cursor: pointer;
+    padding: 0;
+    text-decoration: none;
+  }
+
+  .icon-btn svg {
+    width: 1.15rem;
+    height: 1.15rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .icon-btn:hover { color: var(--ivory); border-color: var(--muted); }
+
+  /* Level picker. */
+  .modes {
+    display: flex;
+    gap: .3rem;
+    margin-top: 1.1rem;
+    padding: .25rem;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+
+  .mode {
+    flex: 1;
+    font: inherit;
+    font-weight: 700;
+    font-size: .92rem;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    padding: .45rem .3rem;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .mode[aria-selected="true"] { background: var(--ochre); color: #22273f; }
+  .mode:not([aria-selected="true"]):hover:not(:disabled) { color: var(--ivory); }
+  .mode-mark { font-weight: 400; margin-left: .2rem; }
+
+  .challenge {
+    margin-top: 1rem;
+    padding: .55rem .8rem;
+    border: 1px dashed var(--ochre);
+    border-radius: var(--radius);
+    background: rgba(224, 178, 92, .06);
+    color: var(--ochre);
+    font-size: .92rem;
+  }
+
+  .challenge b { color: var(--ivory); font-weight: 500; }
+
+  .specimen {
+    margin: 1rem 0 1.25rem;
+    padding: 2.25rem 1.25rem;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    text-align: center;
+    position: relative;
+  }
+
+  .specimen::after {
+    content: "";
+    position: absolute;
+    inset: .4rem;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    pointer-events: none;
+    opacity: .5;
+  }
+
+  .word {
+    font-family: var(--display);
+    font-size: clamp(2.3rem, 11vw, 3.6rem);
+    font-weight: 600;
+    line-height: 1.25;
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .gloss { color: var(--muted); font-size: .9rem; margin: .75rem 0 0; }
+  .gloss b { color: var(--ivory); font-weight: 500; }
+  .specimen .primary { position: relative; z-index: 1; margin-top: 1.1rem; min-width: 9rem; }
+
+  .answer-row { display: flex; gap: .6rem; }
+
+  input[type="text"] {
+    flex: 1;
+    min-width: 0;
+    padding: .8rem .9rem;
+    font: inherit;
+    font-size: 1.25rem;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    color: var(--ivory);
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+
+  input[type="text"]::placeholder { color: var(--muted); font-size: 1rem; }
+  input[type="text"].wrong { border-color: var(--rust); }
+  input:focus-visible, button:focus-visible {
+    outline: 2px solid var(--ochre);
+    outline-offset: 2px;
+  }
+
+  .status {
+    display: flex;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: .85rem;
+    margin: .6rem 0 0;
+  }
+
+  .clock { color: var(--ivory); font-variant-numeric: tabular-nums; }
+
+  .pips { display: flex; gap: .3rem; margin-top: 1.1rem; }
+
+  .pip {
+    flex: 1;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--display);
+    font-size: .85rem;
+    color: var(--line);
+    border: 1px dashed var(--line);
+    border-radius: 6px;
+  }
+
+  .pip.done { border-style: solid; background: var(--panel); color: var(--ivory); font-family: inherit; }
+  .pip.now { border: 1px solid var(--ochre); color: var(--ochre); }
+
+  .result {
+    margin-top: 1.25rem;
+    padding: 1.1rem;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+
+  .verdict { font-family: var(--display); font-size: 1.3rem; margin: 0 0 .4rem; }
+  .verdict.win { color: var(--sage); }
+  .verdict.lose { color: var(--ochre); }
+  .result p { margin: .25rem 0; color: var(--muted); font-size: .92rem; }
+  .result p b { color: var(--ivory); font-weight: 500; }
+
+  .grid-preview { font-size: 1.15rem; letter-spacing: .12em; margin: .8rem 0; }
+  .countdown { font-variant-numeric: tabular-nums; }
+  .actions { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: .8rem; }
+
+  .breakdown { list-style: none; margin: .8rem 0; padding: 0; font-size: .9rem; }
+  .breakdown li {
+    display: flex;
+    gap: .6rem;
+    padding: .3rem 0;
+    border-top: 1px solid var(--line);
+    font-variant-numeric: tabular-nums;
+  }
+  .breakdown .sum { flex: 1; }
+  .breakdown .took { color: var(--muted); }
+
+  button.primary, button.ghost {
+    font: inherit;
+    font-weight: 700;
+    padding: .65rem 1.1rem;
+    border-radius: var(--radius);
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+
+  button.primary { background: var(--ochre); color: #22273f; }
+  button.ghost { background: transparent; color: var(--ivory); border-color: var(--line); }
+  button.ghost:hover { border-color: var(--muted); }
+  button:disabled { opacity: .55; cursor: default; }
+
+  dialog {
+    background: var(--panel);
+    color: var(--ivory);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    width: min(26rem, 92vw);
+  }
+
+  dialog::backdrop { background: rgba(8, 10, 22, .72); }
+  dialog h2 { font-family: var(--display); font-weight: 600; margin: 0 0 .9rem; font-size: 1.25rem; }
+  dialog p.note { color: var(--muted); font-size: .85rem; margin: 0 0 .9rem; }
+
+  dialog p { margin: 0 0 .9rem; font-size: .95rem; }
+  dialog a:not(.button-link) { color: var(--ochre); }
+  dialog h2 + p { margin-top: -.3rem; }
+  dialog .key { list-style: none; padding: 0; margin: 0 0 .9rem; }
+  dialog .key li { display: flex; gap: .6rem; align-items: baseline; margin-bottom: .35rem; }
+  dialog .swatch { font-size: 1rem; min-width: 1.4rem; }
+  dialog .modes { margin: 0 0 1rem; background: var(--panel-2); }
+  #aboutDialog, #welcomeDialog, #statsDialog { max-height: 82dvh; overflow-y: auto; }
+  #welcomeDialog .tagline {
+    font-family: var(--display);
+    font-weight: 900;
+    font-style: italic;
+    font-size: 1.15rem;
+    color: var(--ivory);
+    margin-bottom: 1rem;
+  }
+
+  #aboutDialog h2:first-of-type { margin-top: 0; }
+  #aboutDialog h2 { margin-top: 1.4rem; }
+
+  .button-link {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    font-weight: 700;
+    padding: .65rem 1.1rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    color: var(--ivory);
+  }
+
+  .button-link:hover { border-color: var(--muted); }
+
+  .stat-row { display: flex; gap: .5rem; text-align: center; margin-bottom: 1.1rem; }
+  .stat { flex: 1; }
+  .stat-num { font-family: var(--display); font-size: 1.5rem; }
+  .stat-label { color: var(--muted); font-size: .72rem; line-height: 1.25; }
+
+  .dist { display: flex; flex-direction: column; gap: .3rem; margin-bottom: 1rem; }
+  .dist-row { display: flex; align-items: center; gap: .5rem; font-size: .85rem; }
+  .dist-row > span:first-child { min-width: 5.6rem; }
+  .bar { background: var(--slate); border-radius: 3px; padding: .1rem .4rem; min-width: 1.6rem; text-align: right; }
+  .bar.here { background: var(--sage); color: #17281c; }
+
+  /* archive */
+  .days { display: flex; flex-direction: column; gap: .4rem; max-height: 22rem; overflow-y: auto; margin-bottom: 1rem; }
+
+  .day {
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+    width: 100%;
+    text-align: left;
+    font: inherit;
+    color: var(--ivory);
+    padding: .6rem .8rem;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    cursor: pointer;
+  }
+
+  .day:hover { border-color: var(--muted); }
+  .day-n { font-family: var(--display); min-width: 2.5rem; }
+  .day-state { flex: 1; color: var(--muted); font-size: .85rem; }
+  .day-mark { font-size: .95rem; letter-spacing: .1em; }
+  .day[aria-current="true"] { border-color: var(--ochre); }
+
+  .gate { text-align: center; padding: .5rem 0 1rem; }
+  .gate-num { font-family: var(--display); font-size: 3rem; line-height: 1; }
+  .gate-bar { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; margin-top: 1rem; }
+  .gate-fill { height: 100%; width: 0; background: var(--ochre); }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 1.5rem;
+    transform: translateX(-50%);
+    background: var(--ivory);
+    color: var(--ink);
+    padding: .55rem 1rem;
+    border-radius: var(--radius);
+    font-weight: 500;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .18s ease;
+  }
+
+  .toast.show { opacity: 1; }
+
+  footer { color: var(--muted); font-size: .78rem; margin-top: 2rem; text-align: center; }
+  footer a { color: var(--muted); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+<main class="shell">
+  <header>
+    <div>
+      <h1 class="wordmark">Numb<span>o</span></h1>
+      <div class="puzzle-no" id="puzzleNo"></div>
+    </div>
+    <nav class="nav">
+      <button class="icon-btn" id="archiveBtn" title="Past puzzles" aria-label="Past puzzles">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3 12a9 9 0 1 0 2.6-6.4"/>
+          <polyline points="3 4 3 10 9 10"/>
+          <polyline points="12 7.5 12 12.5 15.5 14.5"/>
+        </svg>
+      </button>
+      <button class="icon-btn" id="statsBtn" title="Your record" aria-label="Your record">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <line x1="6" y1="20" x2="6" y2="13"/>
+          <line x1="12" y1="20" x2="12" y2="4"/>
+          <line x1="18" y1="20" x2="18" y2="9"/>
+        </svg>
+      </button>
+      <button class="icon-btn" id="aboutBtn" title="How to play" aria-label="How to play">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M9.4 9.2a2.7 2.7 0 1 1 3.4 2.6c-.6.2-.9.7-.9 1.3v.6"/>
+          <line x1="12" y1="16.8" x2="12" y2="16.9"/>
+        </svg>
+      </button>
+    </nav>
+  </header>
+
+  <div class="modes" id="modes" role="tablist" aria-label="Level"></div>
+  <div class="challenge" id="challenge" hidden></div>
+
+  <section class="specimen">
+    <p class="word" id="word">…</p>
+    <p class="gloss" id="gloss"></p>
+    <button class="primary" id="startBtn" hidden>Start</button>
+  </section>
+
+  <div id="play" hidden>
+    <div class="answer-row">
+      <input type="text" id="answer" inputmode="numeric" pattern="[0-9]*" autocomplete="off"
+             placeholder="Type the answer" aria-label="Your answer">
+      <button class="ghost" id="skipBtn">Skip +10s</button>
+    </div>
+    <p class="status"><span id="progress"></span><span class="clock" id="clock">0.0s</span></p>
+  </div>
+
+  <div class="pips" id="pips" aria-hidden="true"></div>
+  <div id="resultSlot" aria-live="polite"></div>
+
+  <footer>
+    Ten sums a day, three levels · <a href="about.html">About</a>
+  </footer>
+</main>
+
+<dialog id="statsDialog">
+  <h2>Your record</h2>
+  <div class="modes" id="statModes" role="tablist" aria-label="Level"></div>
+  <div class="stat-row" id="statRow"></div>
+  <div class="stat-row" id="statRow2"></div>
+  <div class="dist" id="dist"></div>
+  <div class="actions">
+    <button class="primary" id="closeStats">Close</button>
+  </div>
+</dialog>
+
+<dialog id="archiveDialog">
+  <h2>Past puzzles</h2>
+  <p class="note" id="archiveNote"></p>
+  <div class="days" id="days"></div>
+  <div class="actions">
+    <button class="primary" id="closeArchive">Close</button>
+  </div>
+</dialog>
+
+<dialog id="gateDialog">
+  <h2>Unlocking puzzle</h2>
+  <div class="gate">
+    <div class="gate-num countdown" id="gateNum">10</div>
+    <p class="note" id="gateNote">Your puzzle opens in a moment.</p>
+    <div class="gate-bar"><div class="gate-fill" id="gateFill"></div></div>
+  </div>
+  <div class="actions">
+    <button class="ghost" id="cancelGate">Cancel</button>
+  </div>
+</dialog>
+
+
+<dialog id="aboutDialog">
+  <h2>How to play</h2>
+  <p>Each day there are ten sums to answer as fast as you can. Press Start, type each
+  answer, and the next sum appears the moment you get it right. There's no Enter key to
+  press and no penalty for a wrong answer beyond the time it costs you.</p>
+
+  <p>Stuck? Skip moves you on, and adds 10 seconds to your time.</p>
+
+  <h2>Levels</h2>
+  <ul class="key">
+    <li><span class="swatch"><b>Easy</b></span><span>Times tables to 10 × 10, and adding or
+      taking away a single digit.</span></li>
+    <li><span class="swatch"><b>Medium</b></span><span>Tables to 15 × 15, and two-digit
+      adding and subtracting.</span></li>
+    <li><span class="swatch"><b>Hard</b></span><span>Up to 15 × 50, and three-digit adding
+      and subtracting.</span></li>
+  </ul>
+  <p>Every level has five add-or-subtract sums and five multiply-or-divide, in a shuffled
+  order. Each level is its own game, with its own time, streak and record.</p>
+
+  <h2>Medals</h2>
+  <ul class="key">
+    <li><span class="swatch">💎</span><span>Platinum — under 30 seconds.</span></li>
+    <li><span class="swatch">🥇</span><span>Gold — under 45.</span></li>
+    <li><span class="swatch">🥈</span><span>Silver — under 60.</span></li>
+    <li><span class="swatch">🥉</span><span>Bronze — under 90.</span></li>
+  </ul>
+  <p>The times are the same on every level, so a medal on Hard is worth more than the same
+  one on Easy.</p>
+
+  <h2>The daily puzzle</h2>
+  <p>New sums at midnight UK time, the same ones for everybody. You get one timed attempt
+  per level per day, and the clock keeps running if you leave the page. Missed a few? The
+  clock button opens past puzzles.</p>
+
+  <h2>Challenge a friend</h2>
+  <p>Share your result and the link carries your time with it. Whoever opens it plays the
+  same sums and sees who won.</p>
+
+  <p>Your results are stored in this browser only — no account, nothing sent anywhere.</p>
+
+  <div class="actions">
+    <a class="ghost button-link" href="about.html">More</a>
+    <button class="primary" id="closeAbout" autofocus>Close</button>
+  </div>
+</dialog>
+
+
+<dialog id="welcomeDialog">
+  <h2>How to play</h2>
+  <p class="tagline">Ten sums. One clock. How fast are you?</p>
+
+  <p>Pick a level and press Start. Type each answer — the next sum appears as soon as
+  you're right.</p>
+
+  <p>Stuck on one? Skip it, for a 10-second penalty.</p>
+
+  <p>Your time earns a medal:</p>
+
+  <ul class="key">
+    <li><span class="swatch">💎</span><span>Platinum — under 30 seconds</span></li>
+    <li><span class="swatch">🥇</span><span>Gold — under 45</span></li>
+    <li><span class="swatch">🥈</span><span>Silver — under 60</span></li>
+    <li><span class="swatch">🥉</span><span>Bronze — under 90</span></li>
+  </ul>
+
+  <p>One timed go per level each day. New sums every day at midnight.</p>
+
+  <div class="actions">
+    <button class="primary" id="startPlaying" autofocus>Play</button>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ------------------------------------------------------------------ *
+ * Settings. Don't change launchDate, MODES or the generator after you
+ * launch: all three decide which sums land on which day.
+ * ------------------------------------------------------------------ */
+const CONFIG = {
+  launchDate: "2026-10-05",     // day 1. Set this to five days before go-live to open on day 6
+  timeZone: "Europe/London",    // when the puzzle rolls over
+  gateSeconds: 10,              // wait before an unplayed past puzzle opens
+  skipPenalty: 10,              // seconds added per skip
+  defaultMode: "medium",
+  name: "Numbo",
+  siteUrl: ""                   // e.g. "https://numbo.example" — blank uses the page's own address
+};
+
+// Each range is [smallest, largest]. "add" covers + and −, "mul" covers × and ÷.
+const MODES = {
+  easy:   { label: "Easy",   code: "e", add: [[2, 99],  [2, 9]],   mul: [[2, 10], [2, 10]] },
+  medium: { label: "Medium", code: "m", add: [[2, 99],  [2, 99]],  mul: [[2, 15], [2, 15]] },
+  hard:   { label: "Hard",   code: "h", add: [[2, 999], [2, 999]], mul: [[2, 15], [2, 50]] }
+};
+const MODE_KEYS = Object.keys(MODES);
+
+// Same times on every level. First match wins.
+const MEDALS = [
+  { key: "platinum", label: "Platinum", icon: "💎", under: 30 },
+  { key: "gold",     label: "Gold",     icon: "🥇", under: 45 },
+  { key: "silver",   label: "Silver",   icon: "🥈", under: 60 },
+  { key: "bronze",   label: "Bronze",   icon: "🥉", under: 90 }
+];
+
+// Per-question squares in the share text: each is one medal's pace (a tenth of its time).
+const PACE = [[3, "⚡"], [4.5, "🟩"], [6, "🟨"], [9, "🟧"], [Infinity, "🟥"]];
+const SKIP_ICON = "⏭️";
+
+const RESULTS_KEY = "numbo.results.v1";
+const DUELS_KEY = "numbo.duels.v1";
+const MODE_KEY = "numbo.mode.v1";
+const SEEN_KEY = "numbo.seen.v1";
+const N = 10;
+
+const $ = id => document.getElementById(id);
+const el = {
+  word: $("word"), gloss: $("gloss"), start: $("startBtn"), play: $("play"),
+  input: $("answer"), skip: $("skipBtn"), progress: $("progress"), clock: $("clock"),
+  pips: $("pips"), result: $("resultSlot"), puzzleNo: $("puzzleNo"), toast: $("toast"),
+  modes: $("modes"), challenge: $("challenge")
+};
+
+/* ---------- dates ---------- */
+
+const ukParts = new Intl.DateTimeFormat("en-GB", {
+  timeZone: CONFIG.timeZone, hour12: false,
+  year: "numeric", month: "2-digit", day: "2-digit",
+  hour: "2-digit", minute: "2-digit", second: "2-digit"
+});
+
+function ukNow() {
+  const out = {};
+  for (const { type, value } of ukParts.formatToParts(new Date())) out[type] = value;
+  return out;
+}
+
+function ukToday() {
+  const p = ukNow();
+  return `${p.year}-${p.month}-${p.day}`;
+}
+
+function dayFromDate(iso) {
+  const launch = Date.parse(CONFIG.launchDate + "T00:00:00Z");
+  return Math.round((Date.parse(iso + "T00:00:00Z") - launch) / 86400000) + 1;
+}
+
+function todayNumber() { return Math.max(1, dayFromDate(ukToday())); }
+
+function dateOfDay(day) {
+  const t = Date.parse(CONFIG.launchDate + "T00:00:00Z") + (day - 1) * 86400000;
+  return new Date(t).toLocaleDateString("en-GB",
+    { timeZone: "UTC", day: "numeric", month: "long", year: "numeric" });
+}
+
+function secondsToMidnight() {
+  const p = ukNow();
+  return 86400 - (Number(p.hour) % 24 * 3600 + Number(p.minute) * 60 + Number(p.second));
+}
+
+function hms(s) {
+  return [Math.floor(s / 3600), Math.floor(s % 3600 / 60), s % 60]
+    .map(n => String(n).padStart(2, "0")).join(":");
+}
+
+/* ---------- the sums ---------- */
+
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = a + 0x6d2b79f5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+// The same ten sums for everyone, worked out from the day number and the level.
+function questionsFor(day, modeKey) {
+  const mode = MODES[modeKey];
+  const rnd = mulberry32(Math.imul(day * 3 + MODE_KEYS.indexOf(modeKey) + 1, 0x9e3779b1));
+  const between = ([lo, hi]) => lo + Math.floor(rnd() * (hi - lo + 1));
+  const coin = () => rnd() < 0.5;
+
+  function make(kind) {
+    let a = between(mode[kind][0]), b = between(mode[kind][1]);
+    if (coin()) [a, b] = [b, a];
+    const lo = Math.min(a, b), hi = Math.max(a, b);
+    if (kind === "mul") {
+      if (coin()) return { text: `${a} × ${b}`, ans: a * b, id: `x${lo},${hi}` };
+      return { text: `${a * b} ÷ ${b}`, ans: a, id: `d${a * b},${b}` };
+    }
+    if (coin()) return { text: `${a} + ${b}`, ans: a + b, id: `p${lo},${hi}` };
+    return { text: `${hi} − ${lo}`, ans: hi - lo, id: `s${hi},${lo}` };   // never negative
+  }
+
+  const seen = new Set(), list = [];
+  for (const kind of ["add", "add", "add", "add", "add", "mul", "mul", "mul", "mul", "mul"]) {
+    let q, tries = 0;
+    do { q = make(kind); } while (seen.has(q.id) && ++tries < 50);   // no repeats in a day
+    seen.add(q.id);
+    list.push(q);
+  }
+  for (let i = list.length - 1; i > 0; i--) {
+    const j = Math.floor(rnd() * (i + 1));
+    [list[i], list[j]] = [list[j], list[i]];
+  }
+  return list;
+}
+
+/* ---------- storage ---------- */
+
+function load(key) {
+  try { return JSON.parse(localStorage.getItem(key)) || {}; } catch { return {}; }
+}
+function save(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
+}
+
+// results[day][mode] = { s: start time, n: sum started at, q: [ms per sum], k: [skipped?],
+//                        o: over, t: final ms, a: played from the archive }
+function getRec(day, mode) { return (load(RESULTS_KEY)[day] || {})[mode] || null; }
+function putRec(day, mode, rec) {
+  const all = load(RESULTS_KEY);
+  (all[day] = all[day] || {})[mode] = rec;
+  save(RESULTS_KEY, all);
+}
+
+/* ---------- scoring ---------- */
+
+function medalFor(ms) { return MEDALS.find(m => ms < m.under * 1000) || null; }
+function paceIcon(ms, skipped) {
+  return skipped ? SKIP_ICON : PACE.find(([s]) => ms < s * 1000)[1];
+}
+function fmt(ms) {
+  const s = ms / 1000;
+  if (s < 60) return s.toFixed(1) + "s";
+  return Math.floor(s / 60) + ":" + (s % 60).toFixed(1).padStart(4, "0");
+}
+function skipsOf(rec) { return rec.k.filter(Boolean).length; }
+function skipNote(n) { return n ? ` (${n} skip${n === 1 ? "" : "s"})` : ""; }
+function grid(rec) { return rec.q.map((ms, i) => paceIcon(ms, rec.k[i])).join(""); }
+
+/* ---------- the round ---------- */
+
+let view = { day: null, mode: CONFIG.defaultMode };
+let run = null;          // { qs, rec } while the clock is going
+let ticker = null;
+
+function paintModes() {
+  const day = load(RESULTS_KEY)[view.day] || {};
+  el.modes.innerHTML = MODE_KEYS.map(key => {
+    const rec = day[key];
+    const mark = rec && rec.o ? ((medalFor(rec.t) || {}).icon || "✓") : "";
+    return `<button class="mode" role="tab" data-mode="${key}"
+      aria-selected="${key === view.mode}" ${run ? "disabled" : ""}>${MODES[key].label}` +
+      (mark ? `<span class="mode-mark">${mark}</span>` : "") + `</button>`;
+  }).join("");
+}
+
+el.modes.onclick = e => {
+  const btn = e.target.closest(".mode");
+  if (!btn || run) return;
+  save(MODE_KEY, { m: btn.dataset.mode });
+  show(view.day, btn.dataset.mode);
+};
+
+function paintHeader() {
+  const past = view.day !== todayNumber();
+  el.puzzleNo.textContent = `Puzzle #${view.day} · ${dateOfDay(view.day)}` + (past ? " (past)" : "");
+}
+
+function paintChallenge() {
+  const duel = load(DUELS_KEY)[view.day + view.mode];
+  const rec = getRec(view.day, view.mode);
+  el.challenge.hidden = !duel || !!(rec && rec.o);
+  if (duel) {
+    el.challenge.innerHTML = `You've been challenged: beat <b>${fmt(duel.t)}</b>` +
+      `${skipNote(duel.k)} on <b>${MODES[view.mode].label}</b>.`;
+  }
+}
+
+function paintPips(rec, current) {
+  let html = "";
+  for (let i = 0; i < N; i++) {
+    if (rec && i < rec.q.length) html += `<div class="pip done">${paceIcon(rec.q[i], rec.k[i])}</div>`;
+    else html += `<div class="pip${i === current ? " now" : ""}">${i + 1}</div>`;
+  }
+  el.pips.innerHTML = html;
+}
+
+// Show a day and level in whatever state it's in: not started, running, or finished.
+function show(day, mode) {
+  clearInterval(ticker);
+  run = null;
+  view = { day, mode };
+  el.result.innerHTML = "";
+  el.input.value = "";
+  const rec = getRec(day, mode);
+  paintHeader();
+
+  if (rec && rec.o) {
+    el.play.hidden = true;
+    el.start.hidden = true;
+    const medal = medalFor(rec.t);
+    el.word.textContent = fmt(rec.t);
+    el.gloss.innerHTML = `${MODES[mode].label} · <b>${medal ? medal.icon + " " + medal.label : "no medal"}</b>`;
+    paintPips(rec, -1);
+    paintModes();
+    paintChallenge();
+    finish(rec, true);
+    return;
+  }
+
+  if (rec && rec.s) return resume(rec);
+
+  el.play.hidden = true;
+  el.start.hidden = false;
+  el.word.textContent = "Ready?";
+  el.gloss.innerHTML = `<b>${MODES[mode].label}</b> · ten sums · the clock starts when you do`;
+  paintPips(null, -1);
+  paintModes();
+  paintChallenge();
+}
+
+el.start.onclick = () => {
+  const now = Date.now();
+  const rec = { s: now, n: now, q: [], k: [], o: false, t: 0, a: view.day !== todayNumber() };
+  putRec(view.day, view.mode, rec);
+  resume(rec);
+};
+
+function resume(rec) {
+  run = { qs: questionsFor(view.day, view.mode), rec };
+  el.start.hidden = true;
+  el.play.hidden = false;
+  paintModes();
+  paintChallenge();
+  ask();
+  clearInterval(ticker);
+  ticker = setInterval(tick, 100);
+  tick();
+}
+
+function elapsed(rec, at) { return at - rec.s + skipsOf(rec) * CONFIG.skipPenalty * 1000; }
+function tick() { if (run) el.clock.textContent = fmt(elapsed(run.rec, Date.now())); }
+
+function ask() {
+  const i = run.rec.q.length;
+  el.word.textContent = run.qs[i].text;
+  el.gloss.textContent = `${MODES[view.mode].label} · sum ${i + 1} of ${N}`;
+  el.progress.textContent = `${N - i} to go`;
+  el.input.value = "";
+  el.input.classList.remove("wrong");
+  paintPips(run.rec, i);
+  el.input.focus();
+}
+
+function advance(skipped) {
+  if (!run) return;
+  const now = Date.now(), rec = run.rec;
+  rec.q.push(now - rec.n);
+  rec.k.push(skipped ? 1 : 0);
+  rec.n = now;
+  if (rec.q.length >= N) {
+    rec.o = true;
+    rec.t = elapsed(rec, now);
+    putRec(view.day, view.mode, rec);
+    return show(view.day, view.mode);
+  }
+  putRec(view.day, view.mode, rec);
+  ask();
+  tick();
+}
+
+el.input.addEventListener("input", () => {
+  if (!run) return;
+  const typed = el.input.value.replace(/\D/g, "");
+  if (typed !== el.input.value) el.input.value = typed;
+  const want = String(run.qs[run.rec.q.length].ans);
+  if (typed === want) return advance(false);
+  el.input.classList.toggle("wrong", typed.length >= want.length);
+});
+
+// Keep the phone keyboard up when Skip is tapped.
+el.skip.addEventListener("pointerdown", e => e.preventDefault());
+el.skip.onclick = () => { advance(true); if (run) el.input.focus(); };
+
+/* ---------- the result ---------- */
+
+function duelLine(rec) {
+  const duel = load(DUELS_KEY)[view.day + view.mode];
+  if (!duel || duel.t === rec.t) return "";
+  const gap = fmt(Math.abs(duel.t - rec.t));
+  return rec.t < duel.t
+    ? `<p>Challenge won: you beat their <b>${fmt(duel.t)}</b> by <b>${gap}</b>.</p>`
+    : `<p>Challenge lost: they did it in <b>${fmt(duel.t)}</b>, <b>${gap}</b> quicker.</p>`;
+}
+
+function finish(rec, resumed) {
+  const medal = medalFor(rec.t), skips = skipsOf(rec);
+  const qs = questionsFor(view.day, view.mode);
+  const daily = view.day === todayNumber();
+  const nextMode = MODE_KEYS.find(k => { const r = getRec(view.day, k); return !(r && r.o); });
+
+  const box = document.createElement("div");
+  box.className = "result";
+  box.innerHTML = `
+    <p class="verdict ${medal ? "win" : "lose"}">${medal
+      ? `${medal.icon} ${medal.label} in ${fmt(rec.t)}.`
+      : `${fmt(rec.t)} — no medal today.`}</p>
+    <p>${skips
+      ? `<b>${skips}</b> skip${skips === 1 ? "" : "s"}, adding <b>${skips * CONFIG.skipPenalty}s</b>.`
+      : "A clean run: no skips."} About <b>${fmt(rec.t / N)}</b> a sum.</p>
+    ${duelLine(rec)}
+    <div class="grid-preview">${grid(rec)}</div>
+    <ol class="breakdown">${qs.map((q, i) => `<li>
+      <span>${paceIcon(rec.q[i], rec.k[i])}</span>
+      <span class="sum">${q.text} = ${q.ans}</span>
+      <span class="took">${rec.k[i] ? "skipped" : fmt(rec.q[i])}</span></li>`).join("")}</ol>
+    ${daily ? `<p>Next Numbo in <b class="countdown" id="countdown">${hms(secondsToMidnight())}</b></p>` : ""}
+    <div class="actions">
+      <button class="primary" id="shareBtn">Challenge a friend</button>
+      ${nextMode ? `<button class="ghost" id="nextBtn">Play ${MODES[nextMode].label}</button>` : ""}
+      <button class="ghost" id="archiveBtn2">Past puzzles</button>
+      <button class="ghost" id="statsBtn2">Stats</button>
+    </div>`;
+  el.result.appendChild(box);
+
+  $("shareBtn").onclick = () => share(rec);
+  $("statsBtn2").onclick = () => showStats(view.mode, rec);
+  $("archiveBtn2").onclick = openArchive;
+  if ($("nextBtn")) $("nextBtn").onclick = () => { save(MODE_KEY, { m: nextMode }); show(view.day, nextMode); };
+  if ($("countdown")) tickCountdown();
+  if (!resumed) box.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+let countdownTimer;
+function tickCountdown() {
+  clearInterval(countdownTimer);
+  countdownTimer = setInterval(() => {
+    const node = $("countdown");
+    if (!node) return clearInterval(countdownTimer);
+    if (todayNumber() !== shownDay) { location.reload(); return; }
+    node.textContent = hms(secondsToMidnight());
+  }, 1000);
+}
+
+/* ---------- sharing ---------- */
+
+function siteUrl() {
+  return CONFIG.siteUrl || location.origin + location.pathname;
+}
+
+function shareText(rec) {
+  const medal = medalFor(rec.t), skips = skipsOf(rec);
+  const link = `${siteUrl()}?d=${view.day}&m=${MODES[view.mode].code}&t=${Math.round(rec.t)}` +
+    (skips ? `&k=${skips}` : "");
+  return [
+    `${CONFIG.name} #${view.day} · ${MODES[view.mode].label} ${medal ? medal.icon + " " : ""}` +
+      `${fmt(rec.t)}${skipNote(skips)}`,
+    grid(rec),
+    "",
+    "Think you can beat me?",
+    link
+  ].join("\n");
+}
+
+async function share(rec) {
+  const text = shareText(rec);
+  try {
+    if (navigator.share && /Android|iPhone|iPad/i.test(navigator.userAgent)) {
+      await navigator.share({ text });
+      return;
+    }
+    await navigator.clipboard.writeText(text);
+    flash("Copied to clipboard");
+  } catch {
+    window.prompt("Copy your result:", text);
+  }
+}
+
+// A challenge link looks like ?d=6&m=h&t=41300&k=1 — day, level, time in ms, skips.
+function readChallenge() {
+  const p = new URLSearchParams(location.search);
+  if (!p.has("d")) return null;
+  const day = Number(p.get("d")), t = Number(p.get("t")), k = Number(p.get("k") || 0);
+  const mode = MODE_KEYS.find(key => MODES[key].code === p.get("m"));
+  try { history.replaceState(null, "", location.pathname); } catch {}
+  if (!mode || !Number.isInteger(day) || day < 1 || day > todayNumber()) return null;
+  if (!(t > 0) || !(k >= 0 && k <= N)) return null;
+  const duels = load(DUELS_KEY);
+  duels[day + mode] = { t, k };
+  save(DUELS_KEY, duels);
+  return { day, mode };
+}
+
+/* ---------- past puzzles ---------- */
+
+function openArchive() {
+  if (run) return flash("Finish this round first");
+  const today = todayNumber(), all = load(RESULTS_KEY), rows = [];
+  $("archiveNote").textContent = CONFIG.gateSeconds > 0
+    ? "Past puzzles open after a short wait. Today's is always free."
+    : "Pick a day to play.";
+
+  for (let day = today; day >= 1; day--) {
+    const recs = all[day] || {};
+    const done = MODE_KEYS.filter(k => recs[k] && recs[k].o);
+    const marks = MODE_KEYS.map(k =>
+      recs[k] && recs[k].o ? ((medalFor(recs[k].t) || {}).icon || "✓") : "·").join(" ");
+    const state = done.length === 0 ? "Not played"
+      : done.length === MODE_KEYS.length ? "All three done" : `${done.length} of 3 done`;
+    rows.push(`<button class="day" data-day="${day}" ${day === today ? 'aria-current="true"' : ""}>
+      <span class="day-n">#${day}</span>
+      <span class="day-state">${dateOfDay(day)} · ${state}</span>
+      <span class="day-mark">${marks}</span></button>`);
+  }
+
+  const list = $("days");
+  list.innerHTML = rows.join("");
+  list.onclick = e => {
+    const btn = e.target.closest(".day");
+    if (!btn) return;
+    const day = Number(btn.dataset.day);
+    $("archiveDialog").close();
+    const started = Object.keys(all[day] || {}).length > 0;
+    if (day === today || started) return show(day, view.mode);
+    gate(() => show(day, view.mode));
+  };
+  $("archiveDialog").showModal();
+}
+
+// The wait is the placeholder for a rewarded ad: swap the body for your ad
+// network's call and run done() in its reward callback.
+let gateTimer;
+function gate(done) {
+  if (CONFIG.gateSeconds <= 0) return done();
+  let left = CONFIG.gateSeconds;
+  const dialog = $("gateDialog"), num = $("gateNum"), fill = $("gateFill");
+  num.textContent = left;
+  fill.style.width = "0%";
+  dialog.showModal();
+  clearInterval(gateTimer);
+  gateTimer = setInterval(() => {
+    left--;
+    num.textContent = Math.max(0, left);
+    fill.style.width = (CONFIG.gateSeconds - left) / CONFIG.gateSeconds * 100 + "%";
+    if (left <= 0) { clearInterval(gateTimer); dialog.close(); done(); }
+  }, 1000);
+}
+$("cancelGate").onclick = () => { clearInterval(gateTimer); $("gateDialog").close(); };
+
+/* ---------- stats ---------- */
+
+// Worked out from the saved results each time, so they can't drift out of sync.
+function statsFor(mode) {
+  const all = load(RESULTS_KEY);
+  const out = { played: 0, clean: 0, skips: 0, time: 0, best: null, streak: 0, longest: 0, medals: {} };
+  for (const m of MEDALS) out.medals[m.key] = 0;
+  out.medals.none = 0;
+
+  const counts = day => { const r = (all[day] || {})[mode]; return r && r.o && !r.a; };
+  for (const day of Object.keys(all)) {
+    const r = all[day][mode];
+    if (!r || !r.o) continue;
+    const skips = skipsOf(r), medal = medalFor(r.t);
+    out.played++;
+    out.skips += skips;
+    out.time += r.t;
+    if (!skips) out.clean++;
+    if (out.best === null || r.t < out.best) out.best = r.t;
+    out.medals[medal ? medal.key : "none"]++;
+  }
+
+  const today = todayNumber();
+  let d = counts(today) ? today : today - 1;
+  while (counts(d)) { out.streak++; d--; }
+
+  let runLen = 0, prev = null;
+  for (const day of Object.keys(all).filter(counts).map(Number).sort((a, b) => a - b)) {
+    runLen = prev !== null && day === prev + 1 ? runLen + 1 : 1;
+    out.longest = Math.max(out.longest, runLen);
+    prev = day;
+  }
+  return out;
+}
+
+function showStats(mode, justNow) {
+  mode = typeof mode === "string" ? mode : view.mode;
+  const s = statsFor(mode);
+  const cell = ([num, label]) =>
+    `<div class="stat"><div class="stat-num">${num}</div><div class="stat-label">${label}</div></div>`;
+
+  $("statModes").innerHTML = MODE_KEYS.map(key =>
+    `<button class="mode" role="tab" data-mode="${key}" aria-selected="${key === mode}">${MODES[key].label}</button>`).join("");
+  $("statModes").onclick = e => {
+    const btn = e.target.closest(".mode");
+    if (btn) showStats(btn.dataset.mode, justNow);
+  };
+
+  $("statRow").innerHTML = [
+    [s.played, "played"], [s.streak, "current streak"],
+    [s.longest, "longest streak"], [s.clean, "clean runs"]
+  ].map(cell).join("");
+  $("statRow2").innerHTML = [
+    [s.played ? fmt(s.time / s.played / N) : "–", "average per sum"],
+    [s.played ? (s.skips / s.played).toFixed(1) : "–", "average skips"],
+    [s.best === null ? "–" : fmt(s.best), "best time"]
+  ].map(cell).join("");
+
+  const here = justNow && mode === view.mode ? ((medalFor(justNow.t) || {}).key || "none") : null;
+  const rows = MEDALS.map(m => [m.key, `${m.icon} ${m.label}`]).concat([["none", "No medal"]]);
+  const most = Math.max(1, ...Object.values(s.medals));
+  $("dist").innerHTML = rows.map(([key, label]) => `<div class="dist-row"><span>${label}</span>
+    <span class="bar${here === key ? " here" : ""}" style="width:${Math.max(8, s.medals[key] / most * 100)}%">${s.medals[key]}</span></div>`).join("");
+
+  if (!$("statsDialog").open) $("statsDialog").showModal();
+}
+
+/* ---------- odds and ends ---------- */
+
+let toastTimer;
+function flash(message) {
+  el.toast.textContent = message;
+  el.toast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.toast.classList.remove("show"), 1600);
+}
+
+function isNewcomer() {
+  try {
+    if (localStorage.getItem(SEEN_KEY)) return false;
+    return Object.keys(load(RESULTS_KEY)).length === 0;
+  } catch { return false; }
+}
+function markSeen() { try { localStorage.setItem(SEEN_KEY, "1"); } catch {} }
+
+$("startPlaying").onclick = () => { markSeen(); $("welcomeDialog").close(); };
+$("welcomeDialog").addEventListener("close", markSeen);
+$("aboutBtn").onclick = () => { const d = $("aboutDialog"); d.showModal(); d.scrollTop = 0; };
+$("closeAbout").onclick = () => $("aboutDialog").close();
+$("statsBtn").onclick = () => showStats();
+$("closeStats").onclick = () => $("statsDialog").close();
+$("archiveBtn").onclick = openArchive;
+$("closeArchive").onclick = () => $("archiveDialog").close();
+
+// A tab left open overnight moves on to the new puzzle when the player comes back.
+let shownDay = null;
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden || run || view.day !== shownDay) return;
+  if (todayNumber() !== shownDay) location.reload();
+});
+
+(function start() {
+  shownDay = todayNumber();
+  const challenge = readChallenge();
+  const savedMode = load(MODE_KEY).m;
+  const mode = challenge ? challenge.mode : MODES[savedMode] ? savedMode : CONFIG.defaultMode;
+  show(challenge ? challenge.day : shownDay, mode);
+  if (isNewcomer()) { const d = $("welcomeDialog"); d.showModal(); d.scrollTop = 0; }
+}());
+</script>
+</body>
+</html>
